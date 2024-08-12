@@ -9,4 +9,4 @@ def trace(func):
 def hello():
     print("hello")
     
-print()
+hello()

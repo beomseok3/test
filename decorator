@@ -1,0 +1,12 @@
+def trace(func):
+    def wrapper():
+        print(func.__name__, 'fuction_start')
+        func()
+        print(func.__name__,'fuction_end')
+    return wrapper
+
+@trace
+def hello():
+    print("hello")
+    
+print()

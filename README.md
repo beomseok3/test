@@ -1,3 +1,6 @@
+db_structures
+---------------------------------------------------------
+
 table Node
 start_f_idx/ end_f_idx/ mission_state/ position (path_planning에 사용하진 않음)
 

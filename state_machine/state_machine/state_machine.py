@@ -1,5 +1,9 @@
 # msg
-from std_msgs.msg import Int32
+from std_msgs.msg import Int32, Header
+from nav_msgs.msg import Path
+from geometry_msgs.msg import PoseStamped
+from tf_transformations import *
+
 
 # external_lib
 import sqlite3
@@ -8,6 +12,20 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile
 import numpy as np
 import math as m
+import sys
+from ament_index_python.packages import get_package_share_directory
+
+try:
+    
+    package_path = get_package_share_directory("parking")
+    sys.path.append(package_path + "/src")
+    from parking import line_ditection_area_addition
+    from parking import avoidance
+    
+except Exception as e:
+    print(e)
+
+
 
 class STATE_MACHINE(Node):
     def __init__(self):
@@ -16,15 +34,60 @@ class STATE_MACHINE(Node):
         
         #sub_stanley_target_idx //
         self.sub_target_idx = self.create_subscription(Int32,"target_idx",qos_profile)
-        
+        self.next = 0
+        self.id = ["a1a2","a2b1","b1b2","b2c1","c1c2"]
+        self.path = []
+        self.pub_path = self.create_publisher(Path,"driving_path",qos_profile)
+        self.path_timer = self.create_timer(1,self.callback_path)
+        self.state=""
+        self.path_db_read()
+        self.state_timer = self.create_timer(1,self.state_machine,)
         
     def path_db_read(self):
-        # read_path and apply the state and logic
-        pass
-        db_file = "exaple.db"
+        db_file = "state_machine_path.db"
         __conn = sqlite3.connect(db_file)
         cursor = __conn.cursor()
-        cursor.execute("SELECT idx,id FROM Path WHERE")
+        # state recieve
+        cursor.execute("SELECT x, y, yaw FROM Path WHERE id == ?",(self.id[self.next]))
+        self.rows = cursor.fetchall()
+        
+        self.self.path = self.Path()
+        self.path.header = Header()
+        self.path.header.stamp = self.get_clock().now().to_msg()
+        self.path.header.frame_id = "map"
+        for x, y, yaw in self.rows:
+                pose = PoseStamped()
+                pose.header.stamp = self.get_clock().now().to_msg()
+                pose.header.frame_id = "map"
+                pose.pose.position.x = x
+                pose.pose.position.y = y
+                pose.pose.position.z = 0.0
+                quaternion = quaternion_from_euler(0, 0, yaw)
+                pose.pose.orientation.x = quaternion[0]
+                pose.pose.orientation.y = quaternion[1]
+                pose.pose.orientation.z = quaternion[2]
+                pose.pose.orientation.w = quaternion[3]
+                self.path.poses.append(pose)
+    
+        
+        if self.flag == "end":
+            self.next += 1
+            self.flag = "start"
+    
+    def state_machine(self):
+        if self.flag == "end":
+            if self.state == "driving":
+                self.path_db_read()
+            elif self.state == "parking":
+                self.parking()
+                pass
+            elif self.state == "avoidance":
+                self.avoidance()
+                pass
+            
+    def callback_path(self):
+        self.pub_path.publish(self.path)
+        
     def parking(self):
         # import parking logic
         pass
@@ -40,29 +103,21 @@ class STATE_MACHINE(Node):
     def switchPath(self):
         # When current path is almost end
         if len(self.path.cx) - 15 < self.target_idx:
+                if self.target_idx == len(self.path.cx) -3:
+                    self.flag = "end"
+                    self.targe_idx = 0
 
-            rospy.logwarn("Try to change path...!")
+def main(args=None):
+    rclpy.init(args=args)
+    node = STATE_MACHINE()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
 
-            current_time = rospy.Time.now()
-            dt = (current_time - self.request_time).to_sec()
 
-            # prevent duplicated request
-            if dt > 1:
-                # not end
-                if self.selector.path.next is not None:
-                    self.request_time = rospy.Time.now()
-                    self.selector.goNext()
-                    self.selector.makeRequest()
-
-                    # next path is end
-                    if self.selector.path.next is None:
-                        self.mission_state = MissionState.END
-                        rospy.loginfo("Missin State : End")
-
-                    # currnet path is not end
-                    else:
-                        self.mission_state = self.selector.path.mission_type
-                        rospy.loginfo("Mission State : %s" %
-                                      str(self.mission_state))
-
-                self.target_idx = 0
+if __name__ == "__main__":
+    main()

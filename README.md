@@ -25,5 +25,33 @@ parameter는 logic에서 sub 받아서 변수로 변형하자 int publish
 --> marker로 확인할 것 그리고 node에 좌표 추가할것, 또 lane 번호도 추가 할 것
 
 ---------------------------------------------------------------------
+A1 Start_point: position 
+	 index: 0
+A2 avoidance_start:     position:
+      x: 18.148517608642578
+      y: 43.508506774902344
+      z: 0.0
+     index:400
+B1 avoidance_end:     position:
+      x: 18.148517608642578
+      y: 43.508506774902344
+      z: 0.0
+      index:457
+ B2 parking_start :     position:
+      x: 37.937705993652344
+      y: 81.07661437988281
+      z: 0.0
+      index:1270
+  C1 parking_end:     position:
+      x: 18.148517608642578
+      y: 43.508506774902344
+      z: 0.0
+      index:1316
+C2 End_point: positon :?
+	index -1
+
+path 분할을 idx 기준으로 해보자
+---------------------------------------------------------------------
  좋은 db 구성하기
 state machine logic 추가하기
+이거 무조건 좌표 이상하다

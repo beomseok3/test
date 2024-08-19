@@ -1,7 +1,5 @@
 # db_structures
 
-------------------------------------------------------------------
-
 table Node
 start_idx/ end_idx/ id / mission_state / position (path_planning에 사용하진 않음)
 
@@ -12,9 +10,7 @@ idx / id / x / y / yaw
 idx / id / x / y / yaw
 ...
 
-------------------------------------------------------------------
-다른 노드에 진입 --> mission_state check'
----------------------------------------------------------------------
+다른 노드에 진입 --> mission_state check
 A1 Start_point: position 
 	 index: 0
 A2 avoidance_start:     position:
@@ -42,7 +38,6 @@ C2 End_point: positon :?
 
 path 분할을 idx 기준으로 해보자
  Node 좌표 이상하다
----------------------------------------------------------------------
 1. path  분할 idx changing
 2. logic 추가 , parameter pub(근데 그냥 코드를 하나에 다 합치면 되기도 함)
 3. node 추가

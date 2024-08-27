@@ -14,3 +14,4 @@ idx / id / x / y / yaw
 ##분할 좌표기록
 ##idx 찾기
 ##split
+아니면 print(self.narrow)
